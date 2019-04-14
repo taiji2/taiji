@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.steins.dao.DayDao">
+    <resultMap id="jobMap" type="com.steins.entity.Job">
+        <id column="job_id" property="jobId"/>
+        <result column="job_name" property="jobName"/>
+        <collection property="thingList" column="job_id"
+             ofType="com.steins.entity.Thing" >
+            <id column="thing_id" property="thingId"/>
+            <result column="thing_name" property="thingName"/>
+            <result column="thing_color" property="thingColor"/>
+            <result column="thing_state" property="thingState"/>
+        </collection>
+    </resultMap>
+
+    <insert id="insertDay" keyProperty="dayId" keyColumn="day_id" useGeneratedKeys="true"
+    parameterType="com.steins.entity.Day">
+         INSERT INTO
+        tb_day(day_name,user_id,create_time,yearMonth)
+        VALUES
+        (
+        #{dayName},#{user.userId},#{createTime},#{yearMonth}
+        )
+    </insert>
+    <insert id="insertJobDao" useGeneratedKeys="true" keyColumn="job_id" keyProperty="jobId" >
+        INSERT INTO
+        tb_job(job_name,day_id)
+        VALUES
+        <foreach collection="list" item="job" index="index"
+                 separator=",">
+            (
+            #{job.jobName},#{dayId}
+            )
+        </foreach>
+    </insert>
+    <insert id="insertThingDao"  >
+        INSERT INTO
+        tb_thing(thing_name,job_id,thing_color,day_id)
+        VALUES
+        <foreach collection="list" item="thing" index="index"
+                 separator=",">
+            (
+            #{thing.thingName},#{jobId},#{thing.thingColor},#{dayId}
+            )
+        </foreach>
+    </insert>
+    <select id="getJobList" resultMap="jobMap">
+        select
+        j.job_name,
+        j.job_id,
+        j.day_id,
+        t.thing_name,
+        t.thing_color,
+        t.thing_state,
+        t.thing_id
+        FROM
+        tb_job j
+        LEFT JOIN
+        tb_thing t
+        ON
+        j.job_id=t.job_id
+        WHERE
+        j.day_id=#{dayId}
+
+    </select>
+    <insert id="insertSelfThing">
+
+     INSERT INTO
+        tb_self_thing(thing_name,user_id,create_time,last_edit_time,thing_color)
+        VALUES
+        (
+        #{thing.thingName},#{userId},#{thing.createTime},#{thing.lastEditTime},
+        #{thing.thingColor}
+        )
+    </insert>
+
+    <select id="getDayByTime" resultType="com.steins.entity.Day">
+        select *
+        FROM
+        tb_day
+        WHERE
+        create_time=#{createTime}
+        and user_id=#{userId}
+    </select>
+    <select id="getDayBySelf" resultType="com.steins.entity.Day">
+        select *
+        From tb_day
+        WHERE
+        user_id=#{userId}
+        and yearMonth=#{yearMonth}
+    </select>
+    <select id="getThingBySelf" resultType="com.steins.entity.SelfThing">
+        select * FROM
+        tb_self_thing
+        WHERE
+        user_id=#{userId}
+    </select>
+    
+    <delete id="deleteJobByDayId">
+        DELETE FROM tb_job where day_id=#{dayId}
+    </delete>
+    <delete id="deleteThingByDayId" >
+        delete FROM tb_thing WHERE day_id=#{dayId}
+    </delete>
+
+    <delete id="deleteDayByDayId">
+        delete from tb_day WHERE day_id=#{dayId}
+    </delete>
+
+    <select id="selectThing" resultType="int">
+        select thing_state FROM tb_thing
+        WHERE
+        job_id=#{jobId} AND
+        thing_id=#{thingId}
+    </select>
+    <update id="finishThing">
+        UPDATE
+        tb_thing
+        <set>
+            thing_state=#{newState}
+        </set>
+        WHERE
+        job_id=#{jobId}
+        and
+        thing_id=#{thingId}
+    </update>
+
+</mapper>
