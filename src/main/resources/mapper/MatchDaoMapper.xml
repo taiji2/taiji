@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.steins.dao.ManageMatch">
+    <select id="selectMatch" resultType="com.steins.entity.Match">
+        select  * from taijimatch where match_id = #{matchId}
+    </select>
+
+    <delete id="deleteMatch">
+        delete from taijimatch where match_id = #{matchId}
+    </delete>
+
+    <insert id="insertMatch" useGeneratedKeys="true" keyProperty="matchId"
+            keyColumn="match_id">
+        insert into taijimatch (match_time,match_place,apply_time,match_desc,male_limit,female_limit,total_limit,is_food,is_sleep,match_type,match_name,match_needKnow,match_content)
+      value (#{matchTime},#{matchPlace},#{applyTime},#{matchDesc},#{maleLimit},#{femaleLimit},#{totalLimit},#{isFood},#{isSleep},#{matchType},#{matchName},#{matchNeedKnow},#{matchContent})
+    </insert>
+
+    <select id="getMatchCount" resultType="int">
+        select count(*) from taijimatch
+    </select>
+
+    <select id="queryMatch" resultType="com.steins.entity.Match">
+        select * from taijimatch limit #{pageNum},#{pageSize}
+    </select>
+
+
+
+    <select id="getMatchNameCount" resultType="int">
+        select count(*) from taijimatch where match_name like CONCAT('%',#{matchName},'%')
+    </select>
+
+    <select id="queryMatchByName" resultType="com.steins.entity.Match">
+        select * from taijimatch where match_name like CONCAT('%',#{matchName},'%') limit #{pageNum},#{pageSize}
+    </select>
+
+    <insert id="insertEventOfMatch" useGeneratedKeys="true" keyColumn="id">
+        insert into t_match_event (event_id,match_id)
+        value (#{eventId},#{matchId})
+    </insert>
+
+
+    <select id="queryEventByMatchId" resultType="com.steins.entity.Event">
+        select * from event where event_id in (select event_id from t_match_event where match_id=#{matchId})
+    </select>
+</mapper>
